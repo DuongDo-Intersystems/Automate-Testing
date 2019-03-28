@@ -1,0 +1,22 @@
+<head>
+   <title>Flask App</title>
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+
+    <h1>Welcome to InterSystems Corporation</h1>
+    <h3>Contents:</h3>
+    <ul>
+        <li><a href="/email">Click here to receive container information sending to your email</a></li>
+        <li><a href="/reset_password">Click here to reset password</a></li>
+    </ul>
+</body>
+
