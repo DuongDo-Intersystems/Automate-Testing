@@ -3,5 +3,7 @@ python:
   - "3.6"
 install:
   - pip install pytest-cov
+  - pip install Flask
+  - pip install Flask-Mail
 script:
   - pytest --cov=Flask tests/
