@@ -6,5 +6,6 @@ install:
   - pip install Flask
   - pip install Flask-Mail
   - pip install WTForms
+  - pip install Flask-WTF
 script:
   - pytest --cov=Flask tests/
