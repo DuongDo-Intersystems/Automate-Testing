@@ -2,7 +2,7 @@ from flask_mail import Mail
 from flask_mail import Message
 from threading import Thread
 from flask import Flask, flash, redirect, render_template, url_for
-from FlaskApp.form_request_password import ResetPasswordRequestForm, ResetPasswordForm
+from FlaskApp.forms import ResetPasswordRequestForm, ResetPasswordForm
 
 
 app = Flask(__name__)

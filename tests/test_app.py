@@ -1,5 +1,5 @@
 import unittest
-import codecs
+from unittest.mock import patch
 from FlaskApp.app import app
 from urllib.parse import urlparse
 
@@ -25,11 +25,12 @@ class AppTest(unittest.TestCase):
         assert b"Login" not in data
         assert b"Logout" not in data
 
-    def reset_password(self, email):
+    def send_email(self, email):
         return self.app.post('/reset_password', data=dict(
-            recipients=email,
+            email=email,
         ), follow_redirects=True)
 
+    #@patch('FlaskApp.app.reset_password_request')
     def test_reset_password_request(self):
         response = self.app.get('/reset_password')
         self.assertEqual(response.status_code, 200)
@@ -42,8 +43,8 @@ class AppTest(unittest.TestCase):
         assert b"New Password" not in data
         assert b"Confirm Password" not in data
 
-        rv = self.reset_password('duong.do@intersystems.com')
-        self.assertEqual(response.status_code, 302)
+        rv = self.send_email('duong.do@intersystems.com')
+        self.assertEqual(rv.status_code, 302)
 
         redirect_data = rv.get_data(as_text=True)
         redirect_data = redirect_data.encode('ascii')
