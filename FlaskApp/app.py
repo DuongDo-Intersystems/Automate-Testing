@@ -2,7 +2,7 @@ from flask_mail import Mail
 from flask_mail import Message
 from threading import Thread
 from flask import Flask, flash, redirect, render_template, url_for
-from Flask.form_request_password import ResetPasswordRequestForm, ResetPasswordForm
+from FlaskApp.form_request_password import ResetPasswordRequestForm, ResetPasswordForm
 
 
 app = Flask(__name__)
@@ -18,6 +18,16 @@ mail = Mail(app)
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/a')
+def a():
+    return redirect(url_for('b'))
+
+
+@app.route('/b')
+def b():
+    return "Online Learning Team 2019"
 
 
 @app.route('/reset_password', methods=['GET', 'POST'])
