@@ -8,4 +8,4 @@ install:
   - pip install WTForms
   - pip install Flask-WTF
 script:
-  - pytest --cov-report term-missing --cov=Flask tests/
+  - pytest --cov-report term-missing --cov=FlaskApp tests/
