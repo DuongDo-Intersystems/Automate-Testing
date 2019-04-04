@@ -1,13 +1,16 @@
 import unittest
 from unittest.mock import patch
-from FlaskApp.app import app
+import codecs
 from urllib.parse import urlparse
+from FlaskApp.app import app
+from FlaskApp.forms import ResetPasswordRequestForm, ResetPasswordForm
 
 
 class AppTest(unittest.TestCase):
     def setUp(self):
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
         self.app = app.test_client()
-        self.app.testing = True
 
     def tearDown(self):
         pass
@@ -25,17 +28,7 @@ class AppTest(unittest.TestCase):
         assert b"Login" not in data
         assert b"Logout" not in data
 
-    def send_email(self, email):
-        return self.app.post('/reset_password', data=dict(
-            email=email,
-        ), follow_redirects=True)
-
-    def test_send_email(self):
-        rv = self.send_email()
-        self.assertEqual(rv.status_code, 200)
-
-    #@patch('FlaskApp.app.reset_password_request')
-    def test_reset_password_request(self):
+    def test_reset_password_request_get(self):
         response = self.app.get('/reset_password')
         self.assertEqual(response.status_code, 200)
 
@@ -47,21 +40,27 @@ class AppTest(unittest.TestCase):
         assert b"New Password" not in data
         assert b"Confirm Password" not in data
 
-        # rv = self.send_email('duong.do@intersystems.com')
-        # self.assertEqual(rv.status_code, 302)
-        #
-        # redirect_data = rv.get_data(as_text=True)
-        # redirect_data = redirect_data.encode('ascii')
-        # assert b"Welcome to InterSystems Corporation" in redirect_data
-        # assert b"Instructions to reset your password sent to" in redirect_data
-        # assert b"duong.do@intersystems.com" in redirect_data
-        # assert b"Click here to receive container information sending to your email" in redirect_data
-        # assert b"Click here to reset password" in redirect_data
-        # assert b"Login" not in redirect_data
-        # assert b"Logout" not in redirect_data
+    @patch('FlaskApp.app.send_password_reset_email')
+    def test_reset_password_request_post(self, mock_send):
+        response = self.app.post(
+            '/reset_password',
+            data={'email': 'fake_email@example.com'})
+        self.assertEqual(response.status_code, 302)
+        assert response.location.endswith('/')
 
-    def test_reset_password(self):
-        response = self.app.get('/reset_password/<user>')
+    @patch('FlaskApp.app.send_password_reset_email')
+    def test_reset_password_request_post_invalid(self, mock_send):
+        response = self.app.post(
+            '/reset_password',
+            data={'email': 'wrong_email'})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.get_data(as_text=True)
+        data = data.encode('ascii')
+        assert b"Reset Password" in data
+
+    def test_reset_password_get(self):
+        response = self.app.get('/reset_password/fake_user')
         self.assertEqual(response.status_code, 200)
 
         data = response.get_data(as_text=True)
@@ -71,7 +70,27 @@ class AppTest(unittest.TestCase):
         assert b"Welcome to" not in data
         assert b"Email" not in data
 
-    def test_send_email(self):
+    @patch('FlaskApp.app.set_password')
+    def test_reset_password_post(self, mock_set):
+        response = self.app.post(
+            '/reset_password/fake_user',
+            data={'password': 'fake_password', 'password2': 'fake_password'})
+        self.assertEqual(response.status_code, 302)
+        assert response.location.endswith('/')
+
+    @patch('FlaskApp.app.set_password')
+    def test_reset_password_post_invalid(self, mock_set):
+        response = self.app.post(
+            '/reset_password/fake_user',
+            data={'password': 'fake_password', 'password2': 'wrong_password'})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.get_data(as_text=True)
+        data = data.encode('ascii')
+        assert b"Password" in data
+
+    @patch('FlaskApp.app.send_async_email')
+    def test_send_email(self, mock_send):
         response = self.app.get('/email')
         self.assertEqual(response.status_code, 200)
 
@@ -82,13 +101,4 @@ class AppTest(unittest.TestCase):
         assert b"Reset Password" not in data
         assert b"Confirm Password" not in data
 
-    def test_redirect(self):
-        first_response = self.app.get('/a')
-        self.assertEqual(first_response.status_code, 302)
 
-        redirect_response = self.app.get('/b')
-        data = redirect_response.get_data(as_text=True)
-        data = data.encode('ascii')
-        assert b"Online Learning Team" in data
-        assert b"Reset Password" not in data
-        assert b"Confirm Password" not in data

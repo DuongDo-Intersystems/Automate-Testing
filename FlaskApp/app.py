@@ -93,7 +93,7 @@ def send_mail():
                "If you want to return to your lab, you can use <a href='link to IDE from flask'>this link</a></p>"
     t = Thread(name="Send Email", target=send_async_email, args=(app, msg))
     t.start()
-    return "Sent email about container successfully."
+    return "Sent email about container successfully. <br><a href='/'>Back to home page</a>"
 
 
 if __name__ == '__main__':
