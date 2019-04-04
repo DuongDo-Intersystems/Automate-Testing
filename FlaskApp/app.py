@@ -20,16 +20,6 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/a')
-def a():
-    return redirect(url_for('b'))
-
-
-@app.route('/b')
-def b():
-    return "Online Learning Team 2019"
-
-
 @app.route('/reset_password', methods=['GET', 'POST'])
 def reset_password_request():
     form = ResetPasswordRequestForm()
